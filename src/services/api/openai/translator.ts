@@ -376,7 +376,10 @@ export function translateResponsesEvent(
           output_tokens: 0,
           cache_creation_input_tokens: 0,
           cache_read_input_tokens: 0,
-          server_tool_use: undefined as unknown as {
+          server_tool_use: {
+            web_search_requests: 0,
+            web_fetch_requests: 0,
+          } as unknown as {
             web_search_requests: number
           },
         },

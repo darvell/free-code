@@ -401,6 +401,14 @@ function buildFetch(
         `[API REQUEST] ${new URL(url).pathname}${id ? ` ${CLIENT_REQUEST_ID_HEADER}=${id}` : ''} source=${source ?? 'unknown'}`,
       )
 
+      // Disable automatic decompression for API requests. Bun's fetch
+      // auto-negotiates gzip/br but a truncated compressed SSE chunk
+      // causes "Decompression error: ZlibError" which surfaces in the
+      // prompt input area. Plain-text SSE has negligible overhead.
+      if (!headers.has('Accept-Encoding')) {
+        headers.set('Accept-Encoding', 'identity')
+      }
+
       if (
         url.includes('/v1/messages') &&
         headers.has('anthropic-version') &&

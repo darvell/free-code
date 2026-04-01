@@ -158,7 +158,14 @@ export function createOpenAIClient(config: OpenAIClientConfig): Anthropic {
     try {
       response = await fetch(responsesUrl, {
         method: 'POST',
-        headers,
+        headers: {
+          ...headers,
+          // Disable automatic decompression for SSE streams. Bun's fetch
+          // auto-decompresses gzip/br, but a truncated or interrupted
+          // compressed SSE chunk causes a ZlibError. Plain-text SSE is
+          // negligible overhead and avoids mid-stream decompression failures.
+          'Accept-Encoding': 'identity',
+        },
         body: JSON.stringify(requestBody),
         signal: controller.signal,
       })

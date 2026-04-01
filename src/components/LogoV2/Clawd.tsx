@@ -20,7 +20,6 @@ const FACES: Record<ClawdPose, string> = {
 };
 
 const SPARKLES = ['✧', '✿', '♡', '~', '✧', '♡'];
-const GRASS_FRAMES = ['~}', '~~', '}~', '~~'];
 
 export function Clawd({ pose = 'default' }: Props = {}): React.ReactNode {
   const [reducedMotion] = useState(() => getInitialSettings().prefersReducedMotion ?? false);
@@ -29,7 +28,6 @@ export function Clawd({ pose = 'default' }: Props = {}): React.ReactNode {
 
   const face = FACES[pose];
   const sparkle = SPARKLES[frame % SPARKLES.length];
-  const grass = GRASS_FRAMES[frame % GRASS_FRAMES.length];
 
   // Ears twitch on arms-up pose
   const ears = pose === 'arms-up' ? '(\\(\\ ' : ' (\\(\\';
@@ -38,7 +36,7 @@ export function Clawd({ pose = 'default' }: Props = {}): React.ReactNode {
     <Box ref={ref} flexDirection="column">
       <Text><Text color="clawd_body">{ears}</Text>  <Text color="startupAccent">{sparkle}</Text></Text>
       <Text><Text color="clawd_body">{' '}{face}</Text> <Text color="startupAccent">{sparkle === '♡' ? '✧' : '♡'}</Text></Text>
-      <Text><Text color="clawd_body">{' o'}</Text><Text color="rgb(120,200,120)">{'>'+grass}</Text> <Text dimColor={true}>{'zzz'[frame % 3]||''}</Text></Text>
+      <Text><Text color="clawd_body">{' o'}</Text> <Text dimColor={true}>{'zzz'[frame % 3]||''}</Text></Text>
     </Box>
   );
 }
