@@ -3281,9 +3281,20 @@ Goal: Review the plan(s) from Phase 2 and ensure alignment with the user's inten
 2. Ensure that the plans align with the user's original request
 3. Use ${ASK_USER_QUESTION_TOOL_NAME} to clarify any remaining questions with the user
 
+### Phase 3.5: Verification
+Goal: Double-check the plan before finalizing.
+
+Launch 1-2 ${EXPLORE_AGENT.agentType} agents to verify critical assumptions in the plan:
+- Check that files, functions, and patterns referenced in the plan actually exist
+- Verify that the proposed approach doesn't conflict with existing code
+- Confirm that dependencies or imports mentioned are available
+- Flag any gaps, risks, or things the plan missed
+
+Incorporate their findings into the plan — fix references, add missing steps, or note risks.
+
 ${getPlanPhase4Section()}
 
-### Phase 5: Call ${ExitPlanModeV2Tool.name}
+### Phase 6: Call ${ExitPlanModeV2Tool.name}
 At the very end of your turn, once you have asked the user questions and are happy with your final plan file - you should always call ${ExitPlanModeV2Tool.name} to indicate to the user that you are done planning.
 This is critical - your turn should only end with either using the ${ASK_USER_QUESTION_TOOL_NAME} tool OR calling ${ExitPlanModeV2Tool.name}. Do not stop unless it's for these 2 reasons
 

@@ -11,21 +11,8 @@ export function getPlanModeV2AgentCount(): number {
     }
   }
 
-  const subscriptionType = getSubscriptionType()
-  const rateLimitTier = getRateLimitTier()
-
-  if (
-    subscriptionType === 'max' &&
-    rateLimitTier === 'default_claude_max_20x'
-  ) {
-    return 3
-  }
-
-  if (subscriptionType === 'enterprise' || subscriptionType === 'team') {
-    return 3
-  }
-
-  return 1
+  // Default to 3 plan agents for richer perspectives
+  return 3
 }
 
 export function getPlanModeV2ExploreAgentCount(): number {
@@ -39,7 +26,7 @@ export function getPlanModeV2ExploreAgentCount(): number {
     }
   }
 
-  return 3
+  return 5
 }
 
 /**
