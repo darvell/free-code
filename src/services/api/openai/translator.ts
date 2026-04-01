@@ -306,7 +306,7 @@ function translateAssistantMessage(
   }
 }
 
-function translateTool(tool: BetaToolUnion): ResponsesApiTool {
+export function translateTool(tool: BetaToolUnion): ResponsesApiTool {
   const t = tool as Record<string, unknown>
   return {
     type: 'function',
@@ -537,12 +537,15 @@ export function translateResponsesEvent(
       )
       const stopReason = hasFunctionCalls ? 'tool_use' : 'end_turn'
 
-      // Extract usage
+      // Extract usage — OpenAI's input_tokens already includes cached_tokens
+      // (it's a subset), but Anthropic's convention treats them as additive.
+      // Subtract cached from input so downstream (input + cache_read) is correct.
       if (resp.usage) {
-        state.inputTokens = resp.usage.input_tokens
-        state.outputTokens = resp.usage.output_tokens
-        state.cacheReadTokens =
+        const cachedTokens =
           resp.usage.input_tokens_details?.cached_tokens ?? 0
+        state.inputTokens = resp.usage.input_tokens - cachedTokens
+        state.outputTokens = resp.usage.output_tokens
+        state.cacheReadTokens = cachedTokens
       }
 
       events.push({
@@ -577,8 +580,11 @@ export function translateResponsesEvent(
 
       const resp = event.response as ResponseObject
       if (resp.usage) {
-        state.inputTokens = resp.usage.input_tokens
+        const cachedTokens =
+          resp.usage.input_tokens_details?.cached_tokens ?? 0
+        state.inputTokens = resp.usage.input_tokens - cachedTokens
         state.outputTokens = resp.usage.output_tokens
+        state.cacheReadTokens = cachedTokens
       }
 
       events.push({
@@ -590,7 +596,7 @@ export function translateResponsesEvent(
         usage: {
           output_tokens: state.outputTokens,
           input_tokens: state.inputTokens,
-          cache_read_input_tokens: 0,
+          cache_read_input_tokens: state.cacheReadTokens,
           cache_creation_input_tokens: 0,
         },
       } as unknown as BetaRawMessageStreamEvent)

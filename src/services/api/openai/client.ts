@@ -372,6 +372,11 @@ function responsesObjectToBetaMessage(
     stopReason = 'end_turn'
   }
 
+  const cachedTokens =
+    ((usage?.input_tokens_details as Record<string, unknown>)
+      ?.cached_tokens as number) ?? 0
+  const rawInputTokens = (usage?.input_tokens as number) ?? 0
+
   return {
     id: (resp.id as string) ?? 'msg_unknown',
     type: 'message',
@@ -381,12 +386,12 @@ function responsesObjectToBetaMessage(
     stop_reason: stopReason,
     stop_sequence: null,
     usage: {
-      input_tokens: (usage?.input_tokens as number) ?? 0,
+      // OpenAI's input_tokens includes cached_tokens; subtract to match
+      // Anthropic's additive convention (input + cache_read = total input).
+      input_tokens: rawInputTokens - cachedTokens,
       output_tokens: (usage?.output_tokens as number) ?? 0,
       cache_creation_input_tokens: 0,
-      cache_read_input_tokens:
-        ((usage?.input_tokens_details as Record<string, unknown>)
-          ?.cached_tokens as number) ?? 0,
+      cache_read_input_tokens: cachedTokens,
     },
   } as unknown as BetaMessage
 }

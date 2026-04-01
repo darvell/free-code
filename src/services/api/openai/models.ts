@@ -29,6 +29,16 @@ export interface OpenAIModelOption {
   description: string
 }
 
+/**
+ * In-memory registry of context window sizes for OpenAI models,
+ * populated when models are fetched from the API.
+ */
+const openaiContextWindows = new Map<string, number>()
+
+export function getOpenAIContextWindow(model: string): number | undefined {
+  return openaiContextWindows.get(model.toLowerCase())
+}
+
 export async function fetchOpenAIModels(
   auth: OpenAIAuthResult,
 ): Promise<OpenAIModelOption[]> {
@@ -69,6 +79,11 @@ export async function fetchOpenAIModels(
       )
       .sort((a, b) => a.priority - b.priority)
       .map((m) => {
+        // Store context window for use by getContextWindowForModel
+        if (m.context_window && m.context_window > 0) {
+          openaiContextWindows.set(m.slug.toLowerCase(), m.context_window)
+        }
+
         const efforts = m.supported_reasoning_levels
           ?.map((r) => r.effort)
           .join('/')

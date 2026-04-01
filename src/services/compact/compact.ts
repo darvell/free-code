@@ -100,6 +100,8 @@ import {
   getMaxOutputTokensForModel,
   queryModelWithStreaming,
 } from '../api/claude.js'
+import { remoteCompact } from '../api/openai/compact.js'
+import { isOpenAIModel } from '../api/openai/modelDetect.js'
 import {
   getPromptTooLongTokenGap,
   PROMPT_TOO_LONG_ERROR_MESSAGE,
@@ -1148,6 +1150,38 @@ async function streamCompactSummary({
   preCompactTokenCount: number
   cacheSafeParams: CacheSafeParams
 }): Promise<AssistantMessage> {
+  // Remote compact for OpenAI models — uses server-side compaction endpoint
+  // that takes the full conversation context and returns compacted history.
+  // Falls through to the existing forked-agent/streaming paths on failure.
+  if (isOpenAIModel(context.options.mainLoopModel)) {
+    try {
+      const systemPromptText = cacheSafeParams.systemPrompt.join('\n\n')
+      const result = await remoteCompact({
+        messages: stripImagesFromMessages(messages),
+        model: context.options.mainLoopModel,
+        tools: context.options.tools as Tool[],
+        systemPrompt: systemPromptText,
+        effortValue: appState.effortValue,
+        signal: context.abortController.signal,
+      })
+      logEvent('tengu_compact_openai_remote_success', {
+        preCompactTokenCount,
+      })
+      return result
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err)
+      logForDebugging(
+        `[OpenAI remote compact] Failed, falling back to local: ${msg}`,
+      )
+      logEvent('tengu_compact_openai_remote_fallback', {
+        reason:
+          msg as AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
+        preCompactTokenCount,
+      })
+      // Fall through to existing paths
+    }
+  }
+
   // When prompt cache sharing is enabled, use forked agent to reuse the
   // main conversation's cached prefix (system prompt, tools, context messages).
   // Falls back to regular streaming path on failure.

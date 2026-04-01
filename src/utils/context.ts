@@ -1,5 +1,7 @@
 // biome-ignore-all assist/source/organizeImports: ANT-ONLY import markers must not be reordered
 import { CONTEXT_1M_BETA_HEADER } from '../constants/betas.js'
+import { isOpenAIModel } from '../services/api/openai/modelDetect.js'
+import { getOpenAIContextWindow } from '../services/api/openai/models.js'
 import { getGlobalConfig } from './config.js'
 import { isEnvTruthy } from './envUtils.js'
 import { getCanonicalName } from './model/model.js'
@@ -69,6 +71,14 @@ export function getContextWindowForModel(
   // [1m] suffix — explicit client-side opt-in, respected over all detection
   if (has1mContext(model)) {
     return 1_000_000
+  }
+
+  // OpenAI models: use context window from the models API if available
+  if (isOpenAIModel(model)) {
+    const openaiCtx = getOpenAIContextWindow(model)
+    if (openaiCtx && openaiCtx > 0) {
+      return openaiCtx
+    }
   }
 
   const cap = getModelCapability(model)
