@@ -1,4 +1,4 @@
-import axios, { type AxiosResponse } from 'axios'
+import { fetch as wreqFetch } from 'wreq-js'
 import { LRUCache } from 'lru-cache'
 import {
   type AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
@@ -120,8 +120,8 @@ const DOMAIN_CHECK_TIMEOUT_MS = 10_000
 
 // Cap same-host redirect hops. Without this a malicious server can return
 // a redirect loop (/a → /b → /a …) and the per-request FETCH_TIMEOUT_MS
-// resets on every hop, hanging the tool until user interrupt. 10 matches
-// common client defaults (axios=5, follow-redirects=21, Chrome=20).
+// resets on every hop, hanging the tool until user interrupt. 10 is in line
+// with common client redirect limits.
 const MAX_REDIRECTS = 10
 
 // Truncate to not spend too many tokens
@@ -180,25 +180,30 @@ export async function checkDomainBlocklist(
     return { status: 'allowed' }
   }
   try {
-    const response = await axios.get(
+    const response = await wreqFetch(
       `https://api.anthropic.com/api/web/domain_info?domain=${encodeURIComponent(domain)}`,
-      { timeout: DOMAIN_CHECK_TIMEOUT_MS },
+      {
+        timeout: DOMAIN_CHECK_TIMEOUT_MS,
+      },
     )
     if (response.status === 200) {
-      if (response.data.can_fetch === true) {
+      const data = (await response.json()) as { can_fetch?: boolean }
+      if (data.can_fetch === true) {
         DOMAIN_CHECK_CACHE.set(domain, true)
         return { status: 'allowed' }
       }
       return { status: 'blocked' }
     }
-    // Non-200 status but didn't throw
     return {
       status: 'check_failed',
       error: new Error(`Domain check returned status ${response.status}`),
     }
   } catch (e) {
     logError(e)
-    return { status: 'check_failed', error: e as Error }
+    return {
+      status: 'check_failed',
+      error: e instanceof Error ? e : new Error(String(e)),
+    }
   }
 }
 
@@ -264,72 +269,54 @@ export async function getWithPermittedRedirects(
   signal: AbortSignal,
   redirectChecker: (originalUrl: string, redirectUrl: string) => boolean,
   depth = 0,
-): Promise<AxiosResponse<ArrayBuffer> | RedirectInfo> {
+): Promise<Response | RedirectInfo> {
   if (depth > MAX_REDIRECTS) {
     throw new Error(`Too many redirects (exceeded ${MAX_REDIRECTS})`)
   }
-  try {
-    return await axios.get(url, {
-      signal,
-      timeout: FETCH_TIMEOUT_MS,
-      maxRedirects: 0,
-      responseType: 'arraybuffer',
-      maxContentLength: MAX_HTTP_CONTENT_LENGTH,
-      headers: {
-        Accept: 'text/markdown, text/html, */*',
-        'User-Agent': getWebFetchUserAgent(),
-      },
-    })
-  } catch (error) {
-    if (
-      axios.isAxiosError(error) &&
-      error.response &&
-      [301, 302, 307, 308].includes(error.response.status)
-    ) {
-      const redirectLocation = error.response.headers.location
-      if (!redirectLocation) {
-        throw new Error('Redirect missing Location header')
-      }
 
-      // Resolve relative URLs against the original URL
-      const redirectUrl = new URL(redirectLocation, url).toString()
+  const response = await wreqFetch(url, {
+    signal,
+    timeout: FETCH_TIMEOUT_MS,
+    redirect: 'manual',
+    headers: {
+      Accept: 'text/markdown, text/html, */*',
+      'User-Agent': getWebFetchUserAgent(),
+    },
+  })
 
-      if (redirectChecker(url, redirectUrl)) {
-        // Recursively follow the permitted redirect
-        return getWithPermittedRedirects(
-          redirectUrl,
-          signal,
-          redirectChecker,
-          depth + 1,
-        )
-      } else {
-        // Return redirect information to the caller
-        return {
-          type: 'redirect',
-          originalUrl: url,
-          redirectUrl,
-          statusCode: error.response.status,
-        }
-      }
-    }
-
-    // Detect egress proxy blocks: the proxy returns 403 with
-    // X-Proxy-Error: blocked-by-allowlist when egress is restricted
-    if (
-      axios.isAxiosError(error) &&
-      error.response?.status === 403 &&
-      error.response.headers['x-proxy-error'] === 'blocked-by-allowlist'
-    ) {
-      const hostname = new URL(url).hostname
-      throw new EgressBlockedError(hostname)
-    }
-
-    throw error
+  if (
+    response.status === 403 &&
+    response.headers.get('x-proxy-error') === 'blocked-by-allowlist'
+  ) {
+    const hostname = new URL(url).hostname
+    throw new EgressBlockedError(hostname)
   }
+
+  if ([301, 302, 307, 308].includes(response.status)) {
+    const redirectLocation = response.headers.get('location')
+    if (!redirectLocation) {
+      throw new Error('Redirect missing Location header')
+    }
+
+    const redirectUrl = new URL(redirectLocation, url).toString()
+
+    if (redirectChecker(url, redirectUrl)) {
+      return getWithPermittedRedirects(redirectUrl, signal, redirectChecker, depth + 1)
+    }
+
+    return {
+      type: 'redirect',
+      originalUrl: url,
+      redirectUrl,
+      statusCode: response.status,
+    }
+  }
+
+  return response
 }
 
 function isRedirectInfo(
-  response: AxiosResponse<ArrayBuffer> | RedirectInfo,
+  response: Response | RedirectInfo,
 ): response is RedirectInfo {
   return 'type' in response && response.type === 'redirect'
 }
@@ -425,12 +412,14 @@ export async function getURLMarkdownContent(
     return response
   }
 
-  const rawBuffer = Buffer.from(response.data)
-  // Release the axios-held ArrayBuffer copy; rawBuffer owns the bytes now.
-  // This lets GC reclaim up to MAX_HTTP_CONTENT_LENGTH (10MB) before Turndown
-  // builds its DOM tree (which can be 3-5x the HTML size).
-  ;(response as { data: unknown }).data = null
-  const contentType = response.headers['content-type'] ?? ''
+  const arrayBuffer = await response.arrayBuffer()
+  if (arrayBuffer.byteLength > MAX_HTTP_CONTENT_LENGTH) {
+    throw new Error(
+      `Response too large (${arrayBuffer.byteLength} bytes, max ${MAX_HTTP_CONTENT_LENGTH})`,
+    )
+  }
+  const rawBuffer = Buffer.from(arrayBuffer)
+  const contentType = response.headers.get('content-type') ?? ''
 
   // Binary content: save raw bytes to disk with a proper extension so Claude
   // can inspect the file later. We still fall through to the utf-8 decode +
