@@ -833,6 +833,16 @@ export const getMemoryFiles = memoize(
           true, // User memory can always include external files
         )),
       )
+      // Try reading ~/.claude/AGENTS.md as alternative
+      const userAgentsMd = join(getClaudeConfigHomeDir(), 'AGENTS.md')
+      result.push(
+        ...(await processMemoryFile(
+          userAgentsMd,
+          'User',
+          processedPaths,
+          true,
+        )),
+      )
       // Process User ~/.claude/rules/*.md files
       const userClaudeRulesDir = getUserClaudeRulesDir()
       result.push(
@@ -889,6 +899,17 @@ export const getMemoryFiles = memoize(
         result.push(
           ...(await processMemoryFile(
             projectPath,
+            'Project',
+            processedPaths,
+            includeExternal,
+          )),
+        )
+
+        // Try reading AGENTS.md as an alternative to CLAUDE.md
+        const agentsPath = join(dir, 'AGENTS.md')
+        result.push(
+          ...(await processMemoryFile(
+            agentsPath,
             'Project',
             processedPaths,
             includeExternal,
