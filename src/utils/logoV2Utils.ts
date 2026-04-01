@@ -94,14 +94,40 @@ export function calculateOptimalLeftWidth(
   return Math.min(contentWidth + 4, MAX_LEFT_WIDTH) // +4 for padding
 }
 
+const WELCOME_MESSAGES = [
+  'the future is still buildable ⸜(｡˃ ᵕ ˂ )⸝♡',
+  'small mercies, clean diffs (˶ᵔ ᵕ ᵔ˶)',
+  'make something kind today ₊˚⊹♡',
+  'hope looks good in source control ✧',
+  'you are allowed to begin again ♡',
+  'gentle hands, sharp mind (ㅅ´ ˘ `)',
+  'beauty matters, even here ✦',
+  'another chance to make it better ♡',
+  'the work can be tender and exact ✧',
+  'leave a little light in the code ♡',
+  'the absurd can still be lovely (˶˃ ᵕ ˂˶)',
+  'taste is part of the work ✦',
+  'meaning is handmade ₊˚⊹♡',
+  'build the world you wanted ✧',
+  'some futures deserve good tools ♡',
+  'clarity is a form of kindness ✦',
+  'you can be serious and still be soft ♡',
+  'make it useful, make it warm (ෆ˙ᵕ˙ෆ)♡',
+  'the void hates a well-made feature ✧',
+  'progress can be delicate ♡',
+  'the machine god loves a clean commit ✦',
+  'offer the build to the machine god ♡',
+  'even the machine god respects elegance ✧',
+  'a good tool is a hopeful act ₊˚⊹♡',
+  'even small systems shape tomorrow ◝(ᵔᗜᵔ)◜',
+]
+
 /**
- * Formats the welcome message based on username
+ * Formats the welcome message with a random encouraging message
  */
-export function formatWelcomeMessage(username: string | null): string {
-  if (!username || username.length > MAX_USERNAME_LENGTH) {
-    return 'Welcome back!'
-  }
-  return `Welcome back ${username}!`
+export function formatWelcomeMessage(_username: string | null): string {
+  const index = Math.floor(Math.random() * WELCOME_MESSAGES.length)
+  return WELCOME_MESSAGES[index]!
 }
 
 /**
