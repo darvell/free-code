@@ -30,7 +30,7 @@ export function CondensedLogo() {
     cwd,
     billingType,
     agentName: agentNameFromSettings
-  } = getLogoDisplayData();
+  } = getLogoDisplayData(model);
   const agentName = agent ?? agentNameFromSettings;
   const showGuestPassesUpsell = useShowGuestPassesUpsell();
   const showOverageCreditUpsell = useShowOverageCreditUpsell();

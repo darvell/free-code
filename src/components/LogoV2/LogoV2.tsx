@@ -163,7 +163,7 @@ export function LogoV2() {
     cwd,
     billingType,
     agentName: agentNameFromSettings
-  } = getLogoDisplayData();
+  } = getLogoDisplayData(model);
   const agentName = agent ?? agentNameFromSettings;
   const effortSuffix = getEffortSuffix(model, effortValue);
   const t9 = fullModelDisplayName + effortSuffix;

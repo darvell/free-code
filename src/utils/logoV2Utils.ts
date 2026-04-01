@@ -1,4 +1,5 @@
 import { getDirectConnectServerUrl, getSessionId } from '../bootstrap/state.js'
+import { isOpenAIModel } from '../services/api/openai/modelDetect.js'
 import { stringWidth } from '../ink/stringWidth.js'
 import type { LogOption } from '../types/logs.js'
 import { getSubscriptionName, isClaudeAISubscriber } from './auth.js'
@@ -268,7 +269,7 @@ export function formatReleaseNoteForDisplay(
 /**
  * Gets the common logo display data used by both LogoV2 and CondensedLogo
  */
-export function getLogoDisplayData(): {
+export function getLogoDisplayData(modelName?: string): {
   version: string
   cwd: string
   billingType: string
@@ -282,9 +283,11 @@ export function getLogoDisplayData(): {
   const cwd = serverUrl
     ? `${displayPath} in ${serverUrl.replace(/^https?:\/\//, '')}`
     : displayPath
-  const billingType = isClaudeAISubscriber()
-    ? getSubscriptionName()
-    : 'API Usage Billing'
+  const billingType = modelName && isOpenAIModel(modelName)
+    ? 'OpenAI API'
+    : isClaudeAISubscriber()
+      ? getSubscriptionName()
+      : 'API Usage Billing'
   const agentName = getInitialSettings().agent
 
   return {
