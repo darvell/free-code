@@ -33,6 +33,23 @@ import { getAgentColor } from './agentColorManager.js';
 import { GENERAL_PURPOSE_AGENT } from './built-in/generalPurposeAgent.js';
 const MAX_PROGRESS_MESSAGES_TO_SHOW = 3;
 
+function getSafeUsageTokenCount(usage: {
+  input_tokens?: number | null;
+  output_tokens?: number | null;
+  cache_creation_input_tokens?: number | null;
+  cache_read_input_tokens?: number | null;
+} | null | undefined): number | null {
+  if (!usage) {
+    return null;
+  }
+  return (
+    (usage.cache_creation_input_tokens ?? 0) +
+    (usage.cache_read_input_tokens ?? 0) +
+    (usage.input_tokens ?? 0) +
+    (usage.output_tokens ?? 0)
+  );
+}
+
 /**
  * Guard: checks if progress data has a `message` field (agent_progress or
  * skill_progress).  Other progress types (e.g. bash_progress forwarded from
@@ -483,9 +500,7 @@ export function renderToolUseProgressMessage(progressMessages: ProgressMessage<P
     let tokens = null;
     if (latestAssistant?.data.message.type === 'assistant') {
       const usage = latestAssistant.data.message.message.usage;
-      if (usage) {
-        tokens = (usage.cache_creation_input_tokens ?? 0) + (usage.cache_read_input_tokens ?? 0) + usage.input_tokens + usage.output_tokens;
-      }
+      tokens = getSafeUsageTokenCount(usage);
     }
     return {
       toolUseCount,

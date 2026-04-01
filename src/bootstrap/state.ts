@@ -44,6 +44,7 @@ export type AttributedCounter = {
 
 type State = {
   originalCwd: string
+  originalCliArgv: string[]
   // Stable project root - set once at startup (including by --worktree flag),
   // never updated by mid-session EnterWorktreeTool.
   // Use for project identity (history, skills, sessions) not file operations.
@@ -276,6 +277,7 @@ function getInitialState(): State {
   }
   const state: State = {
     originalCwd: resolvedCwd,
+    originalCliArgv: typeof process !== 'undefined' ? [...process.argv] : [],
     projectRoot: resolvedCwd,
     totalCostUSD: 0,
     totalAPIDuration: 0,
@@ -499,6 +501,14 @@ export function getSessionProjectDir(): string | null {
 
 export function getOriginalCwd(): string {
   return STATE.originalCwd
+}
+
+export function getOriginalCliArgv(): string[] {
+  return [...STATE.originalCliArgv]
+}
+
+export function setOriginalCliArgv(argv: string[]): void {
+  STATE.originalCliArgv = [...argv]
 }
 
 /**

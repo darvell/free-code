@@ -1,15 +1,18 @@
 import chalk from 'chalk'
 import { writeSync } from 'fs'
 import memoize from 'lodash-es/memoize.js'
+import { basename } from 'path'
 import { onExit } from 'signal-exit'
 import type { ExitReason } from 'src/entrypoints/agentSdkTypes.js'
 import {
   getIsInteractive,
   getIsScrollDraining,
   getLastMainRequestId,
+  getOriginalCliArgv,
   getSessionId,
   isSessionPersistenceDisabled,
 } from '../bootstrap/state.js'
+import { quote } from './bash/shellQuote.js'
 import instances from '../ink/instances.js'
 import {
   DISABLE_KITTY_KEYBOARD,
@@ -137,6 +140,41 @@ function cleanupTerminalModes(): void {
 
 let resumeHintPrinted = false
 
+export function getResumeCommand(resumeArg: string): string {
+  const originalArgv = getOriginalCliArgv()
+  const invokedAs =
+    process.argv0 && process.argv0.trim().length > 0
+      ? basename(process.argv0)
+      : basename(process.execPath)
+
+  const rawArgs = originalArgv.slice(2)
+  const preservedArgs: string[] = []
+
+  for (let i = 0; i < rawArgs.length; i++) {
+    const arg = rawArgs[i]!
+
+    if (arg === '-c' || arg === '--continue') {
+      continue
+    }
+    if (arg === '--resume') {
+      i += 1
+      continue
+    }
+    if (arg.startsWith('--resume=')) {
+      continue
+    }
+    if (arg.startsWith('--continue=')) {
+      continue
+    }
+
+    preservedArgs.push(arg)
+  }
+
+  return [invokedAs, ...preservedArgs, '--resume', resumeArg]
+    .map(part => quote([part]))
+    .join(' ')
+}
+
 /**
  * Print a hint about how to resume the session.
  * Only shown for interactive sessions with persistence enabled.
@@ -173,7 +211,7 @@ function printResumeHint(): void {
       writeSync(
         1,
         chalk.dim(
-          `\nResume this session with:\nclaude --resume ${resumeArg}\n`,
+          `\nResume this session with:\n${getResumeCommand(resumeArg)}\n`,
         ),
       )
       resumeHintPrinted = true
