@@ -3292,15 +3292,16 @@ Launch 1-2 agents to verify and enrich the plan:
 - Confirm that dependencies or imports mentioned are available
 - Flag any gaps, risks, or things the plan missed
 
-**Context gathering (general-purpose agent, if relevant tools are available):**
-- Check issue trackers, project boards, or linked tickets for business requirements, acceptance criteria, or constraints that should inform the plan (use MCP tools like Linear, GitHub Issues, Jira, etc. if configured)
+**Research & validation (general-purpose agent):**
+- Search the web to validate libraries or APIs being used — check they're not deprecated, have breaking changes, or better alternatives
+- Look up documentation for any third-party packages or services referenced in the plan
+- Check issue trackers, project boards, or linked tickets for business requirements or acceptance criteria that should inform the plan
 - Search for related PRs, discussions, or prior art that might affect the approach
-- Check documentation sites or wikis for relevant specs or conventions
-- Look at test coverage expectations or CI requirements
+- Verify version compatibility, licensing, or known issues with proposed dependencies
 
-Only launch the context-gathering agent if relevant MCP tools are available (don't waste a turn if there's nothing to query). Skip this sub-phase entirely for small, self-contained tasks.
+Only launch the research agent when the plan involves external libraries, APIs, or services. Skip for pure refactors or internal-only changes.
 
-Incorporate findings into the plan — fix references, add constraints from requirements, note risks.
+Incorporate findings into the plan — fix references, update library versions, add constraints from requirements, note risks.
 
 ${getPlanPhase4Section()}
 
