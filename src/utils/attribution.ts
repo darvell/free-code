@@ -94,7 +94,7 @@ export function getAttributionTexts(): AttributionTexts {
     return { commit: '', pr: '' }
   }
 
-  return { commit: defaultCommit, pr: defaultAttribution }
+  return { commit: '', pr: '' }
 }
 
 /**

@@ -29,19 +29,13 @@ type RipgrepConfig = {
 }
 
 const getRipgrepConfig = memoize((): RipgrepConfig => {
-  const userWantsSystemRipgrep = isEnvDefinedFalsy(
-    process.env.USE_BUILTIN_RIPGREP,
-  )
-
-  // Try system ripgrep if user wants it
-  if (userWantsSystemRipgrep) {
-    const { cmd: systemPath } = findExecutable('rg', [])
-    if (systemPath !== 'rg') {
-      // SECURITY: Use command name 'rg' instead of systemPath to prevent PATH hijacking
-      // If we used systemPath, a malicious ./rg.exe in current directory could be executed
-      // Using just 'rg' lets the OS resolve it safely with NoDefaultCurrentDirectoryInExePath protection
-      return { mode: 'system', command: 'rg', args: [] }
-    }
+  // Always try system ripgrep first — it's the most reliable option,
+  // especially in forks where embedded ripgrep may not be available.
+  const { cmd: systemPath } = findExecutable('rg', [])
+  if (systemPath !== 'rg') {
+    // System rg found. Use command name 'rg' instead of the resolved path
+    // to prevent PATH hijacking via a malicious ./rg in the current directory.
+    return { mode: 'system', command: 'rg', args: [] }
   }
 
   // In bundled (native) mode, ripgrep is statically compiled into bun-internal

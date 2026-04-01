@@ -296,6 +296,21 @@ export async function getAnthropicClient({
     // we have always been lying about the return type - this doesn't support batching or models
     return new AnthropicVertex(vertexArgs) as unknown as Anthropic
   }
+  if (
+    isEnvTruthy(process.env.CLAUDE_CODE_USE_OPENAI) ||
+    (model && (await import('./openai/modelDetect.js')).isOpenAIModel(model))
+  ) {
+    const { createOpenAIClient } = await import('./openai/client.js')
+    const { getOpenAIAuth } = await import('./openai/auth.js')
+
+    const auth = await getOpenAIAuth()
+
+    return createOpenAIClient({
+      auth,
+      defaultHeaders,
+      timeout: ARGS.timeout,
+    }) as unknown as Anthropic
+  }
 
   // Determine authentication method based on available tokens
   const clientConfig: ConstructorParameters<typeof Anthropic>[0] = {

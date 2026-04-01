@@ -630,6 +630,23 @@ export function userMessageToMessageParam(
   }
 }
 
+/**
+ * Strip thinking blocks with empty thinking text — these cause API 400 errors.
+ * Can happen when OpenAI reasoning items produce no summary content.
+ */
+function stripEmptyThinkingBlocks(
+  content: AssistantMessage['message']['content'],
+): AssistantMessage['message']['content'] {
+  if (typeof content === 'string') return content
+  return content.filter(block => {
+    if (block.type === 'thinking') {
+      const tb = block as unknown as { thinking?: string }
+      return tb.thinking && tb.thinking.length > 0
+    }
+    return true
+  })
+}
+
 export function assistantMessageToMessageParam(
   message: AssistantMessage,
   addCache = false,
@@ -653,7 +670,7 @@ export function assistantMessageToMessageParam(
     } else {
       return {
         role: 'assistant',
-        content: message.message.content.map((_, i) => ({
+        content: stripEmptyThinkingBlocks(message.message.content).map((_, i) => ({
           ..._,
           ...(i === message.message.content.length - 1 &&
           _.type !== 'thinking' &&
@@ -669,7 +686,7 @@ export function assistantMessageToMessageParam(
   }
   return {
     role: 'assistant',
-    content: message.message.content,
+    content: stripEmptyThinkingBlocks(message.message.content),
   }
 }
 

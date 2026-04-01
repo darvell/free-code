@@ -15,6 +15,7 @@ RESET='\033[0m'
 REPO="https://github.com/paoloanzn/free-code.git"
 INSTALL_DIR="$HOME/free-code"
 BUN_MIN_VERSION="1.3.11"
+SUSPICIOUS_PACKAGES=("modifiers-napi" "color-diff-napi")
 
 info()  { printf "${CYAN}[*]${RESET} %s\n" "$*"; }
 ok()    { printf "${GREEN}[+]${RESET} %s\n" "$*"; }
@@ -112,10 +113,34 @@ clone_repo() {
   ok "Source: $INSTALL_DIR"
 }
 
+check_suspicious_packages() {
+  local pkg
+  local installed_dir
+  local stub_dir
+  local entrypoint
+  for pkg in "${SUSPICIOUS_PACKAGES[@]}"; do
+    installed_dir="$INSTALL_DIR/node_modules/$pkg"
+    stub_dir="$INSTALL_DIR/stubs/$pkg"
+    if [ ! -d "$installed_dir" ]; then
+      fail "Expected local stub for '$pkg' was not installed."
+    fi
+    case "$pkg" in
+      modifiers-napi) entrypoint="index.cjs" ;;
+      color-diff-napi) entrypoint="index.js" ;;
+      *) fail "Unexpected package check target: $pkg" ;;
+    esac
+    if ! cmp -s "$installed_dir/package.json" "$stub_dir/package.json" || \
+       ! cmp -s "$installed_dir/$entrypoint" "$stub_dir/$entrypoint"; then
+      fail "Unsafe package source for '$pkg'. Expected the vendored stub from $stub_dir."
+    fi
+  done
+}
+
 install_deps() {
   info "Installing dependencies..."
   cd "$INSTALL_DIR"
   bun install --frozen-lockfile 2>/dev/null || bun install
+  check_suspicious_packages
   ok "Dependencies installed"
 }
 

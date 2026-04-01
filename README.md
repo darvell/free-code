@@ -89,6 +89,8 @@ free-code
 - macOS or Linux (Windows via WSL)
 - An Anthropic API key (set `ANTHROPIC_API_KEY` in your environment)
 
+On March 31, 2026, the public npm names `modifiers-napi` and `color-diff-napi` were registered by an unrelated third party. This repo now pins both names to vendored `file:` stubs under `stubs/` and enforces a 7-day minimum package age through `.bunfig.toml`, so those names never need to come from npm.
+
 ```bash
 # Install Bun if you don't have it
 curl -fsSL https://bun.sh/install | bash

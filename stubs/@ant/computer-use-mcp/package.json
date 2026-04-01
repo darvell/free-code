@@ -1,0 +1,9 @@
+{
+  "name": "@ant/computer-use-mcp",
+  "version": "0.0.1",
+  "main": "index.js",
+  "exports": {
+    ".": "./index.js",
+    "./types": "./types.js"
+  }
+}

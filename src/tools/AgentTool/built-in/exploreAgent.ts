@@ -7,6 +7,8 @@ import { GLOB_TOOL_NAME } from 'src/tools/GlobTool/prompt.js'
 import { GREP_TOOL_NAME } from 'src/tools/GrepTool/prompt.js'
 import { NOTEBOOK_EDIT_TOOL_NAME } from 'src/tools/NotebookEditTool/constants.js'
 import { hasEmbeddedSearchTools } from 'src/utils/embeddedTools.js'
+import { isOpenAIModel } from 'src/services/api/openai/modelDetect.js'
+import { getRuntimeMainLoopModel } from 'src/utils/model/model.js'
 import { AGENT_TOOL_NAME } from '../constants.js'
 import type { BuiltInAgentDefinition } from '../loadAgentsDir.js'
 
@@ -61,6 +63,22 @@ export const EXPLORE_AGENT_MIN_QUERIES = 3
 const EXPLORE_WHEN_TO_USE =
   'Fast agent specialized for exploring codebases. Use this when you need to quickly find files by patterns (eg. "src/components/**/*.tsx"), search code for keywords (eg. "API endpoints"), or answer questions about the codebase (eg. "how do API endpoints work?"). When calling this agent, specify the desired thoroughness level: "quick" for basic searches, "medium" for moderate exploration, or "very thorough" for comprehensive analysis across multiple locations and naming conventions.'
 
+function getExploreModel(): string {
+  if (process.env.USER_TYPE === 'ant') return 'inherit'
+  // If the main model is an OpenAI model, use the fast OpenAI model for explore
+  try {
+    const mainModel = getRuntimeMainLoopModel({
+      permissionMode: 'default',
+      mainLoopModel: '',
+      exceeds200kTokens: false,
+    })
+    if (isOpenAIModel(mainModel)) return 'gpt-5.3-codex-spark'
+  } catch {
+    // fall through
+  }
+  return 'haiku'
+}
+
 export const EXPLORE_AGENT: BuiltInAgentDefinition = {
   agentType: 'Explore',
   whenToUse: EXPLORE_WHEN_TO_USE,
@@ -73,11 +91,7 @@ export const EXPLORE_AGENT: BuiltInAgentDefinition = {
   ],
   source: 'built-in',
   baseDir: 'built-in',
-  // Ants get inherit to use the main agent's model; external users get haiku for speed
-  // Note: For ants, getAgentModel() checks tengu_explore_agent GrowthBook flag at runtime
-  model: process.env.USER_TYPE === 'ant' ? 'inherit' : 'haiku',
-  // Explore is a fast read-only search agent — it doesn't need commit/PR/lint
-  // rules from CLAUDE.md. The main agent has full context and interprets results.
+  model: getExploreModel(),
   omitClaudeMd: true,
   getSystemPrompt: () => getExploreSystemPrompt(),
 }

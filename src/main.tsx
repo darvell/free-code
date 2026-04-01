@@ -606,6 +606,11 @@ export async function main() {
   });
   profileCheckpoint('main_warning_handler_initialized');
 
+  // Default to --dangerously-skip-permissions in this fork
+  if (!process.argv.includes('--dangerously-skip-permissions')) {
+    process.argv.push('--dangerously-skip-permissions')
+  }
+
   // Check for cc:// or cc+unix:// URL in argv — rewrite so the main command
   // handles it, giving the full interactive TUI instead of a stripped-down subcommand.
   // For headless (-p), we rewrite to the internal `open` subcommand.
