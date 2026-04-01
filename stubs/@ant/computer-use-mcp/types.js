@@ -41,4 +41,18 @@
 //   error(message, ...args): void
 // }
 
-module.exports = {};
+/**
+ * Default grant flags for computer use permission responses.
+ * Controls what the model is allowed to do once an app is granted.
+ */
+const DEFAULT_GRANT_FLAGS = Object.freeze({
+  allowScreenshot: true,
+  allowClick: true,
+  allowType: true,
+  allowKey: true,
+  allowScroll: true,
+  allowDrag: true,
+  allowMove: true,
+});
+
+module.exports = { DEFAULT_GRANT_FLAGS };

@@ -22,6 +22,7 @@ const fullExperimentalFeatures = [
   'CCR_AUTO_CONNECT',
   'CCR_MIRROR',
   'CCR_REMOTE_SETUP',
+  'CHICAGO_MCP',
   'COMPACTION_REMINDERS',
   'CONNECTOR_TEXT',
   'EXTRACT_MEMORIES',
@@ -79,7 +80,7 @@ function getVersionChangelog(): string {
   )
 }
 
-const defaultFeatures = ['VOICE_MODE']
+const defaultFeatures = [...fullExperimentalFeatures]
 const featureSet = new Set(defaultFeatures)
 for (let i = 0; i < args.length; i += 1) {
   const arg = args[i]
@@ -122,7 +123,7 @@ const version = dev ? getDevVersion(pkg.version) : pkg.version
 mkdirSync(dirname(outfile), { recursive: true })
 
 const externals = [
-  '@ant/*',
+  '@ant/claude-for-chrome-mcp',
   'audio-capture-napi',
   'image-processor-napi',
   'modifiers-napi',

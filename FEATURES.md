@@ -29,11 +29,16 @@ externalized `@ant/*` packages.
 
 ## Default Build Flags
 
-- `VOICE_MODE`
-  This is now included in the default build pipeline, not just the dev build.
-  It enables `/voice`, push-to-talk UI, voice notices, and dictation plumbing.
-  Runtime still depends on claude.ai OAuth plus either the native audio module
-  or a fallback recorder such as SoX.
+All working experimental features listed below are now included in the default
+`bun run build` pipeline. The `build:dev:full` variant is identical but stamps
+a dev version string and sets `NODE_ENV=development`.
+
+The following env-var overrides exist for features that have additional runtime
+gates beyond the compile-time flag:
+
+- `CLAUDE_CODE_DISABLE_COMPUTER_USE=1`
+  Disables computer use at runtime. Computer use is enabled by default on
+  external builds (macOS, interactive session). Set this to turn it off.
 
 ## Working Experimental Features
 
@@ -110,7 +115,9 @@ explicitly called out as default-on.
 - `CCR_REMOTE_SETUP`
   Enables the remote setup command path.
 - `CHICAGO_MCP`
-  Enables computer-use MCP integration paths and wrapper loading.
+  Enables computer-use MCP integration with local stubs for
+  `@ant/computer-use-mcp`. Native `.node` modules in `vendor/native/`.
+  Enabled by default; disable with `CLAUDE_CODE_DISABLE_COMPUTER_USE=1`.
 - `CONNECTOR_TEXT`
   Enables connector-text block handling in API/logging/UI paths.
 - `MCP_RICH_OUTPUT`
@@ -184,10 +191,6 @@ have meaningful runtime caveats:
 - `KAIROS_BRIEF`, `KAIROS_CHANNELS`
   Bundle cleanly, but they do not restore the full missing assistant stack.
   They only expose the brief/channel-specific surfaces that still exist.
-- `CHICAGO_MCP`
-  Bundles cleanly, but the runtime path still reaches externalized
-  `@ant/computer-use-*` packages. This is compile-safe, not fully
-  runtime-safe, in the external snapshot.
 - `TEAMMEM`
   Bundles cleanly, but only does useful work when team-memory config/files are
   actually enabled in the environment.

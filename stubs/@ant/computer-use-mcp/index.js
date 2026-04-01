@@ -380,6 +380,26 @@ async function dispatchToolCall(adapter, toolName, args, _coordinateMode) {
   }
 }
 
+// ── Session context binding ─────────────────────────────────────────────────
+
+/**
+ * Bind a session context to a host adapter, returning a tool dispatch function.
+ *
+ * @param {object} adapter - ComputerUseHostAdapter
+ * @param {string} coordinateMode - 'pixels' or 'normalized'
+ * @param {object} ctx - ComputerUseSessionContext with callbacks
+ * @returns {(toolName: string, args: unknown) => Promise<CuCallToolResult>}
+ */
+function bindSessionContext(adapter, coordinateMode, ctx) {
+  return async function dispatch(toolName, args) {
+    return dispatchToolCall(adapter, toolName, args || {}, coordinateMode);
+  };
+}
+
+// ── Grant flags ─────────────────────────────────────────────────────────────
+
+const { DEFAULT_GRANT_FLAGS } = require('./types.js');
+
 // ── Exports ─────────────────────────────────────────────────────────────────
 
 module.exports = {
@@ -387,4 +407,6 @@ module.exports = {
   targetImageSize,
   buildComputerUseTools,
   createComputerUseMcpServer,
+  bindSessionContext,
+  DEFAULT_GRANT_FLAGS,
 };

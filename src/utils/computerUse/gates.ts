@@ -43,6 +43,14 @@ function hasRequiredSubscription(): boolean {
 }
 
 export function getChicagoEnabled(): boolean {
+  // Explicit opt-out
+  if (process.env.CLAUDE_CODE_DISABLE_COMPUTER_USE === '1') {
+    return false
+  }
+  // External builds: enable by default (no GrowthBook to gate on)
+  if (process.env.USER_TYPE !== 'ant') {
+    return hasRequiredSubscription()
+  }
   // Disable for ants whose shell inherited monorepo dev config.
   // MONOREPO_ROOT_DIR is exported by config/local/zsh/zshrc, which
   // laptop-setup.sh wires into ~/.zshrc — its presence is the cheap
