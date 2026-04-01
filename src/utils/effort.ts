@@ -29,6 +29,10 @@ export function modelSupportsEffort(model: string): boolean {
   if (supported3P !== undefined) {
     return supported3P
   }
+  // OpenAI/Codex models support effort via reasoning.effort
+  if (m.startsWith('gpt-') || m.startsWith('o1') || m.startsWith('o3') || m.startsWith('o4')) {
+    return true
+  }
   // Supported by a subset of Claude 4 models
   if (m.includes('opus-4-6') || m.includes('sonnet-4-6')) {
     return true
@@ -55,7 +59,12 @@ export function modelSupportsMaxEffort(model: string): boolean {
   if (supported3P !== undefined) {
     return supported3P
   }
-  if (model.toLowerCase().includes('opus-4-6')) {
+  // OpenAI models with xhigh support
+  const m = model.toLowerCase()
+  if (m.startsWith('gpt-') || m.startsWith('o1') || m.startsWith('o3') || m.startsWith('o4')) {
+    return true
+  }
+  if (m.includes('opus-4-6')) {
     return true
   }
   if (process.env.USER_TYPE === 'ant' && resolveAntModel(model)) {

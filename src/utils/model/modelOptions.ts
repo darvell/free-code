@@ -323,22 +323,15 @@ function getModelOptionsBase(fastMode = false): ModelOption[] {
     return standardOptions
   }
 
-  // PAYG 1P API: Default (Sonnet) + Sonnet 1M + Opus 4.6 + Opus 1M + Haiku
+  // PAYG 1P API: Opus 4.6 (default) + Opus 1M + Sonnet 4.6 + Sonnet 1M + Haiku
   if (getAPIProvider() === 'firstParty') {
-    const payg1POptions = [getDefaultOptionForUser(fastMode)]
-    if (checkSonnet1mAccess()) {
-      payg1POptions.push(getSonnet46_1MOption())
-    }
-    if (isOpus1mMergeEnabled()) {
-      payg1POptions.push(getMergedOpus1MOption(fastMode))
-    } else {
-      payg1POptions.push(getOpus46Option(fastMode))
-      if (checkOpus1mAccess()) {
-        payg1POptions.push(getOpus46_1MOption(fastMode))
-      }
-    }
-    payg1POptions.push(getHaiku45Option())
-    return payg1POptions
+    return [
+      getDefaultOptionForUser(fastMode),
+      getMergedOpus1MOption(fastMode),
+      getSonnet46Option(),
+      getSonnet46_1MOption(),
+      getHaiku45Option(),
+    ]
   }
 
   // PAYG 3P: Default (Sonnet 4.5) + Sonnet (3P custom) or Sonnet 4.6/1M + Opus (3P custom) or Opus 4.1/Opus 4.6/Opus1M + Haiku + Opus 4.1

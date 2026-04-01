@@ -194,9 +194,8 @@ export function getDefaultMainLoopModelSetting(): ModelName | ModelAlias {
     return getDefaultOpusModel() + (isOpus1mMergeEnabled() ? '[1m]' : '')
   }
 
-  // PAYG (1P and 3P), Enterprise, Team Standard, and Pro get Sonnet as default
-  // Note that PAYG (3P) may default to an older Sonnet model
-  return getDefaultSonnetModel()
+  // Default to Opus 1M for all users in this fork
+  return getDefaultOpusModel() + '[1m]'
 }
 
 /**
