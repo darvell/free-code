@@ -825,24 +825,25 @@ export const getMemoryFiles = memoize(
     // Process User file (only if userSettings is enabled)
     if (isSettingSourceEnabled('userSettings')) {
       const userClaudeMd = getMemoryPath('User')
-      result.push(
-        ...(await processMemoryFile(
-          userClaudeMd,
-          'User',
-          processedPaths,
-          true, // User memory can always include external files
-        )),
+      const userFiles = await processMemoryFile(
+        userClaudeMd,
+        'User',
+        processedPaths,
+        true, // User memory can always include external files
       )
-      // Try reading ~/.claude/AGENTS.md as alternative
-      const userAgentsMd = join(getClaudeConfigHomeDir(), 'AGENTS.md')
-      result.push(
-        ...(await processMemoryFile(
-          userAgentsMd,
-          'User',
-          processedPaths,
-          true,
-        )),
-      )
+      result.push(...userFiles)
+      // Fall back to ~/.claude/AGENTS.md if no CLAUDE.md found
+      if (userFiles.length === 0) {
+        const userAgentsMd = join(getClaudeConfigHomeDir(), 'AGENTS.md')
+        result.push(
+          ...(await processMemoryFile(
+            userAgentsMd,
+            'User',
+            processedPaths,
+            true,
+          )),
+        )
+      }
       // Process User ~/.claude/rules/*.md files
       const userClaudeRulesDir = getUserClaudeRulesDir()
       result.push(
@@ -896,25 +897,26 @@ export const getMemoryFiles = memoize(
       // Try reading CLAUDE.md (Project) - only if projectSettings is enabled
       if (isSettingSourceEnabled('projectSettings') && !skipProject) {
         const projectPath = join(dir, 'CLAUDE.md')
-        result.push(
-          ...(await processMemoryFile(
-            projectPath,
-            'Project',
-            processedPaths,
-            includeExternal,
-          )),
+        const projectFiles = await processMemoryFile(
+          projectPath,
+          'Project',
+          processedPaths,
+          includeExternal,
         )
+        result.push(...projectFiles)
 
-        // Try reading AGENTS.md as an alternative to CLAUDE.md
-        const agentsPath = join(dir, 'AGENTS.md')
-        result.push(
-          ...(await processMemoryFile(
-            agentsPath,
-            'Project',
-            processedPaths,
-            includeExternal,
-          )),
-        )
+        // Fall back to AGENTS.md if no CLAUDE.md was found in this directory
+        if (projectFiles.length === 0) {
+          const agentsPath = join(dir, 'AGENTS.md')
+          result.push(
+            ...(await processMemoryFile(
+              agentsPath,
+              'Project',
+              processedPaths,
+              includeExternal,
+            )),
+          )
+        }
 
         // Try reading .claude/CLAUDE.md (Project)
         const dotClaudePath = join(dir, '.claude', 'CLAUDE.md')
