@@ -256,7 +256,7 @@ function SpinnerWithVerbInner({
   const tipsEnabled = settings.spinnerTipsEnabled !== false;
   const showClearTip = tipsEnabled && elapsedSnapshot > 1_800_000;
   const showBtwTip = tipsEnabled && elapsedSnapshot > 30_000 && !getGlobalConfig().btwUseCount;
-  const effectiveTip = contextTipsActive ? undefined : showClearTip && !nextTask ? 'Use /clear to start fresh when switching topics and free up context' : showBtwTip && !nextTask ? "Use /btw to ask a quick side question without interrupting Claude's current work" : spinnerTip;
+  const effectiveTip = contextTipsActive ? undefined : showClearTip && !nextTask ? '(◕ᴗ◕) use /clear to start fresh~ free up brain space ♡' : showBtwTip && !nextTask ? "(◕ᴗ◕) psst~ use /btw to ask a side question without interrupting me~" : spinnerTip;
 
   // Budget text (ant-only) — shown above the tip line
   let budgetText: string | null = null;
@@ -346,7 +346,7 @@ function BriefSpinner(t0) {
   const [, time] = useAnimationFrame(reducedMotion ? null : 120);
   const runningCount = useAppState(_temp6);
   const showConnWarning = connStatus === "reconnecting" || connStatus === "disconnected";
-  const connText = connStatus === "reconnecting" ? "Reconnecting" : "Disconnected";
+  const connText = connStatus === "reconnecting" ? "Reconnecting" : "(×_×) Disconnected";
   const dotFrame = Math.floor(time / 300) % 3;
   let t3;
   if ($[3] !== dotFrame || $[4] !== reducedMotion) {
@@ -456,7 +456,7 @@ export function BriefIdleStatus() {
     columns
   } = useTerminalSize();
   const showConnWarning = connStatus === "reconnecting" || connStatus === "disconnected";
-  const connText = connStatus === "reconnecting" ? "Reconnecting\u2026" : "Disconnected";
+  const connText = connStatus === "reconnecting" ? "(◎_◎) Reconnecting\u2026" : "(×_×) Disconnected";
   const leftText = showConnWarning ? connText : "";
   const rightText = runningCount > 0 ? `${runningCount} in background` : "";
   if (!leftText && !rightText) {

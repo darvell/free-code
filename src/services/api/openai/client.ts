@@ -20,7 +20,10 @@ import {
   APIConnectionTimeoutError,
 } from '@anthropic-ai/sdk/error'
 import { getUserAgent } from 'src/utils/http.js'
-import { translateToResponsesApi } from './translator.js'
+import {
+  getReasoningSummaryText,
+  translateToResponsesApi,
+} from './translator.js'
 import { OpenAIStreamAdapter } from './stream.js'
 import { translateOpenAIError } from './errors.js'
 import { OpenAIWebSocketTransport } from './ws.js'
@@ -342,6 +345,19 @@ function responsesObjectToBetaMessage(
         name: item.name as string,
         input: parsedInput,
       })
+    } else if (item.type === 'reasoning') {
+      const thinking = getReasoningSummaryText(
+        item.summary as
+          | Array<{ type: 'output_text'; text: string }>
+          | undefined,
+      )
+      if (thinking) {
+        content.push({
+          type: 'thinking',
+          thinking,
+          signature: '',
+        })
+      }
     }
   }
 

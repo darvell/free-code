@@ -241,7 +241,7 @@ export function ConsoleOAuthFlow({
           state: 'success'
         });
         void sendNotification({
-          message: 'Claude Code login successful',
+          message: 'Cute Code login successful~ (◕ᴗ◕)♡',
           notificationType: 'auth_success'
         }, terminal);
       }

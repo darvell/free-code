@@ -3,7 +3,7 @@ import sample from 'lodash-es/sample.js';
 import React from 'react';
 import { gracefulShutdown } from '../utils/gracefulShutdown.js';
 import { WorktreeExitDialog } from './WorktreeExitDialog.js';
-const GOODBYE_MESSAGES = ['Goodbye!', 'See ya!', 'Bye!', 'Catch you later!'];
+const GOODBYE_MESSAGES = ['bai bai~ (^-^)/', 'see u later (◕ᴗ◕)♡', '(*＾▽＾)/ byeee~', 'zzz~ bunny needs rest (=^-ω-^=)', 'uwu until next time~', '(ﾉ◕ヮ◕)ﾉ*:・゚✧ laterrr', '♡ stay cute! (◕ᴗ◕)', 'b-bye~ (//ω//)'];
 function getRandomGoodbyeMessage(): string {
   return sample(GOODBYE_MESSAGES) ?? 'Goodbye!';
 }

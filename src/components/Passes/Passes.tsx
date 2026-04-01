@@ -109,7 +109,7 @@ export function Passes({
   if (loading) {
     return <Pane>
         <Box flexDirection="column" gap={1}>
-          <Text dimColor>Loading guest pass information…</Text>
+          <Text dimColor>(◕ᴗ◕) loading guest pass info~</Text>
           <Text dimColor italic>
             {exitState.pending ? <>Press {exitState.keyName} again to exit</> : <>Esc to cancel</>}
           </Text>

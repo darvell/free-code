@@ -94,7 +94,7 @@ export function MCPReconnect(t0) {
     }
     let t4;
     if ($[8] === Symbol.for("react.memo_cache_sentinel")) {
-      t4 = <Box><Spinner /><Text> Establishing connection to MCP server</Text></Box>;
+      t4 = <Box><Spinner /><Text> (◕ᴗ◕) connecting to MCP server~</Text></Box>;
       $[8] = t4;
     } else {
       t4 = $[8];

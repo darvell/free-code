@@ -157,7 +157,7 @@ export function DreamDetailDialog(t0) {
     } else {
       t6 = $[48];
     }
-    t7 = shown.length === 0 ? <Text dimColor={true}>{task.status === "running" ? "Starting\u2026" : "(no text output)"}</Text> : <>{hidden > 0 && <Text dimColor={true}>({hidden} earlier {plural(hidden, "turn")})</Text>}{shown.map(_temp2)}</>;
+    t7 = shown.length === 0 ? <Text dimColor={true}>{task.status === "running" ? "(◕ᴗ◕) starting~" : "(no text output)"}</Text> : <>{hidden > 0 && <Text dimColor={true}>({hidden} earlier {plural(hidden, "turn")})</Text>}{shown.map(_temp2)}</>;
     $[8] = elapsedTime;
     $[9] = handleKeyDown;
     $[10] = onBack;

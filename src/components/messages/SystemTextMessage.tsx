@@ -101,7 +101,7 @@ export function SystemTextMessage(t0) {
     let t3;
     if ($[13] === Symbol.for("react.memo_cache_sentinel")) {
       t2 = <Box minWidth={2}><Text color="error">{BLACK_CIRCLE}</Text></Box>;
-      t3 = <Text dimColor={true}>All background agents stopped</Text>;
+      t3 = <Text dimColor={true}>(=_=) all background agents stopped~ zzz</Text>;
       $[13] = t2;
       $[14] = t3;
     } else {

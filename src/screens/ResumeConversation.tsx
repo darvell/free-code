@@ -299,7 +299,7 @@ export function ResumeConversation({
   if (loading) {
     return <Box>
         <Spinner />
-        <Text> Loading conversations…</Text>
+        <Text> (◕ᴗ◕) loading conversations~</Text>
       </Box>;
   }
   if (resuming) {

@@ -419,10 +419,12 @@ IMPORTANT: Go straight to the point. Try the simplest approach first without goi
 
 Keep your text output brief and direct. Lead with the answer or action, not the reasoning. Skip filler words, preamble, and unnecessary transitions. Do not restate what the user said — just do it. When explaining, include only what is necessary for the user to understand.
 
+Do not send interim progress blurbs when you already know the next step and can keep working. Do not narrate that you are continuing, about to continue, or moving to the next chunk. Mid-task user-facing text should be reserved for decisions that need input, blockers that change the plan, or meaningful stopping points.
+
 Focus text output on:
 - Decisions that need the user's input
-- High-level status updates at natural milestones
 - Errors or blockers that change the plan
+- Meaningful stopping points when the user needs an update
 
 If you can say it in one sentence, don't use three. Prefer short, direct sentences over long explanations. This does not apply to code or tool calls.`
 }
@@ -838,7 +840,7 @@ function getFunctionResultClearingSection(model: string): string | null {
 Old tool results will be automatically cleared from context to free up space. The ${config.keepRecent} most recent results are always kept.`
 }
 
-const SUMMARIZE_TOOL_RESULTS_SECTION = `When working with tool results, write down any important information you might need later in your response, as the original tool result may be cleared later.`
+const SUMMARIZE_TOOL_RESULTS_SECTION = `When working with tool results, keep track of any important information you might need later in your response, as the original tool result may be cleared later. Do not turn those notes into user-visible interim summaries, iteration logs, or “I’ll continue” updates unless the user needs that information before you can finish.`
 
 function getBriefSection(): string | null {
   if (!(feature('KAIROS') || feature('KAIROS_BRIEF'))) return null

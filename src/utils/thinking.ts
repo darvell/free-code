@@ -105,6 +105,16 @@ export function modelSupportsThinking(model: string): boolean {
   if (provider === 'foundry' || provider === 'firstParty') {
     return !canonical.includes('claude-3-')
   }
+  if (provider === 'openai') {
+    const lowerModel = model.toLowerCase()
+    return (
+      lowerModel.startsWith('gpt-') ||
+      lowerModel.startsWith('o1') ||
+      lowerModel.startsWith('o3') ||
+      lowerModel.startsWith('o4') ||
+      lowerModel.startsWith('codex')
+    )
+  }
   // 3P (Bedrock/Vertex): only Opus 4+ and Sonnet 4+
   return canonical.includes('sonnet-4') || canonical.includes('opus-4')
 }
@@ -140,6 +150,9 @@ export function modelSupportsAdaptiveThinking(model: string): boolean {
   // is a proxy). Do not default to true for other 3P as they have different formats
   // for their model strings.
   const provider = getAPIProvider()
+  if (provider === 'openai') {
+    return false
+  }
   return provider === 'firstParty' || provider === 'foundry'
 }
 

@@ -69,5 +69,5 @@ export function getBudgetContinuationMessage(
   budget: number,
 ): string {
   const fmt = (n: number): string => new Intl.NumberFormat('en-US').format(n)
-  return `Stopped at ${pct}% of token target (${fmt(turnTokens)} / ${fmt(budget)}). Keep working \u2014 do not summarize.`
+  return `Stopped at ${pct}% of token target (${fmt(turnTokens)} / ${fmt(budget)}). Keep working without sending a progress update or summary unless you are blocked or need user input.`
 }

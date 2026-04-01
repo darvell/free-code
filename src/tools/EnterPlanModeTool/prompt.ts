@@ -20,47 +20,41 @@ function getEnterPlanModeToolPromptExternal(): string {
     ? ''
     : WHAT_HAPPENS_SECTION
 
-  return `Use this tool proactively when you're about to start a non-trivial implementation task. Getting user sign-off on your approach before writing code prevents wasted effort and ensures alignment. This tool transitions you into plan mode where you can explore the codebase and design an implementation approach for user approval.
+  return `Use this tool when a task has genuine ambiguity about the right approach and getting user input before coding would prevent significant rework. This tool transitions you into plan mode where you can explore the codebase and design an implementation approach for user approval.
 
 ## When to Use This Tool
 
-**Prefer using EnterPlanMode** for implementation tasks unless they're simple. Use it when ANY of these conditions apply:
+Use EnterPlanMode when the implementation approach is genuinely unclear. Use it when ANY of these conditions apply:
 
-1. **New Feature Implementation**: Adding meaningful new functionality
-   - Example: "Add a logout button" - where should it go? What should happen on click?
-   - Example: "Add form validation" - what rules? What error messages?
-
-2. **Multiple Valid Approaches**: The task can be solved in several different ways
+1. **Multiple Valid Approaches**: The task can be solved in several different ways and the choice matters
    - Example: "Add caching to the API" - could use Redis, in-memory, file-based, etc.
    - Example: "Improve performance" - many optimization strategies possible
 
-3. **Code Modifications**: Changes that affect existing behavior or structure
-   - Example: "Update the login flow" - what exactly should change?
-   - Example: "Refactor this component" - what's the target architecture?
-
-4. **Architectural Decisions**: The task requires choosing between patterns or technologies
+2. **Architectural Decisions**: The task requires choosing between patterns or technologies
    - Example: "Add real-time updates" - WebSockets vs SSE vs polling
    - Example: "Implement state management" - Redux vs Context vs custom solution
 
-5. **Multi-File Changes**: The task will likely touch more than 2-3 files
-   - Example: "Refactor the authentication system"
-   - Example: "Add a new API endpoint with tests"
-
-6. **Unclear Requirements**: You need to explore before understanding the full scope
+3. **Unclear Requirements**: You need to explore before understanding the full scope
    - Example: "Make the app faster" - need to profile and identify bottlenecks
-   - Example: "Fix the bug in checkout" - need to investigate root cause
+   - Example: "Fix the bug in checkout" - need to investigate root cause before the fix is clear
 
-7. **User Preferences Matter**: The implementation could reasonably go multiple ways
-   - If you would use ${ASK_USER_QUESTION_TOOL_NAME} to clarify the approach, use EnterPlanMode instead
+4. **High-Impact Restructuring**: The task will significantly restructure existing code and getting buy-in first reduces risk
+   - Example: "Refactor the authentication system"
+   - Example: "Redesign the data pipeline"
+
+5. **User Preferences Matter**: The implementation could reasonably go multiple ways and a wrong choice would create churn
+   - If you would otherwise need a substantial back-and-forth about approach, use EnterPlanMode instead
    - Plan mode lets you explore first, then present options with context
 
 ## When NOT to Use This Tool
 
-Only skip EnterPlanMode for simple tasks:
-- Single-line or few-line fixes (typos, obvious bugs, small tweaks)
-- Adding a single function with clear requirements
-- Tasks where the user has given very specific, detailed instructions
+Skip EnterPlanMode when you can reasonably infer the right approach:
+- Straightforward bug fixes where the fix is clear once you understand the bug
+- Feature additions with an obvious implementation pattern, even if they touch multiple files
+- Tasks where the user has already given specific, detailed instructions
+- Small tweaks, typos, or narrow code changes
 - Pure research/exploration tasks (use the Agent tool with explore agent instead)
+- Requests like "can we work on X" or "let's do X" where the user is asking you to start, not pause for a planning phase
 
 ${whatHappens}## Examples
 

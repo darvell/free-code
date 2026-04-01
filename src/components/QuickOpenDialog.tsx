@@ -224,7 +224,7 @@ export function QuickOpenDialog(t0) {
   return t14;
 }
 function _temp6(q_0) {
-  return q_0 ? "No matching files" : "Start typing to search\u2026";
+  return q_0 ? "(◎_◎) no matching files~" : "(◕ᴗ◕) start typing to search~";
 }
 function _temp5(p_3) {
   return p_3;

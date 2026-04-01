@@ -276,11 +276,11 @@ export function DiffDialog(t0) {
   let t19;
   bb0: {
     if (diffData.loading) {
-      t19 = "Loading diff\u2026";
+      t19 = "(◕ᴗ◕) loading diff~";
       break bb0;
     }
     if (currentTurn) {
-      t19 = "No file changes in this turn";
+      t19 = "(=_=) no file changes in this turn~";
       break bb0;
     }
     if (diffData.stats && diffData.stats.filesCount > 0 && diffData.files.length === 0) {

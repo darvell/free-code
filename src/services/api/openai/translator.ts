@@ -16,6 +16,7 @@ import type {
   InputFunctionCall,
   InputFunctionCallOutput,
   InputMessage,
+  OutputContentPart,
   ResponseInputItem,
   ResponseObject,
   ResponsesApiRequest,
@@ -27,6 +28,67 @@ import type {
 // ---------------------------------------------------------------------------
 // Request translation: Anthropic -> OpenAI Responses API
 // ---------------------------------------------------------------------------
+
+function mapEffortToOpenAIReasoning(
+  effort: unknown,
+): ResponsesReasoning['effort'] | undefined {
+  switch (effort) {
+    case 'low':
+      return 'low'
+    case 'medium':
+      return 'medium'
+    case 'high':
+      return 'high'
+    case 'max':
+      return 'xhigh'
+    default:
+      return undefined
+  }
+}
+
+function mapThinkingToOpenAIReasoning(
+  params: BetaMessageStreamParams,
+): ResponsesReasoning | undefined {
+  const outputConfig = (params as Record<string, unknown>).output_config as
+    | Record<string, unknown>
+    | undefined
+  const effortFromOutputConfig = mapEffortToOpenAIReasoning(outputConfig?.effort)
+  if (effortFromOutputConfig) {
+    return {
+      effort: effortFromOutputConfig,
+      summary: 'detailed',
+    }
+  }
+
+  const thinking = params.thinking as Record<string, unknown> | undefined
+  if (!thinking || (thinking.type !== 'enabled' && thinking.type !== 'adaptive')) {
+    return undefined
+  }
+
+  const budgetTokens = thinking.budget_tokens as number | undefined
+  let effort: ResponsesReasoning['effort'] = 'medium'
+  if (budgetTokens !== undefined) {
+    if (budgetTokens <= 2_000) effort = 'minimal'
+    else if (budgetTokens <= 10_000) effort = 'low'
+    else if (budgetTokens <= 30_000) effort = 'medium'
+    else if (budgetTokens <= 60_000) effort = 'high'
+    else effort = 'xhigh'
+  }
+
+  return {
+    effort,
+    summary: 'detailed',
+  }
+}
+
+export function getReasoningSummaryText(
+  summary: OutputContentPart[] | undefined,
+): string {
+  return (summary ?? [])
+    .filter(part => part.type === 'output_text' && typeof part.text === 'string')
+    .map(part => part.text)
+    .join('')
+}
 
 export function translateToResponsesApi(
   params: BetaMessageStreamParams,
@@ -77,25 +139,8 @@ export function translateToResponsesApi(
 
   // Reasoning from thinking config
   // Maps Anthropic thinking budget to OpenAI Responses API reasoning effort.
-  // Codex supports: none, minimal, low, medium (default), high, xhigh
-  let reasoning: ResponsesReasoning | undefined
-  if (params.thinking) {
-    const thinking = params.thinking as Record<string, unknown>
-    if (thinking.type === 'enabled' || thinking.type === 'adaptive') {
-      const budgetTokens = thinking.budget_tokens as number | undefined
-      let effort: string = 'medium'
-      if (budgetTokens) {
-        if (budgetTokens > 30000) effort = 'high'
-        else if (budgetTokens > 10000) effort = 'medium'
-        else if (budgetTokens > 2000) effort = 'low'
-        else effort = 'low'
-      }
-      reasoning = {
-        effort: effort as ResponsesReasoning['effort'],
-        summary: 'auto',
-      }
-    }
-  }
+  // Codex supports: none, minimal, low, medium, high, xhigh
+  const reasoning = mapThinkingToOpenAIReasoning(params)
 
   const request: ResponsesApiRequest = {
     model,
@@ -105,7 +150,7 @@ export function translateToResponsesApi(
     tools: tools && tools.length > 0 ? tools : [],
     tool_choice: tool_choice ?? 'auto',
     parallel_tool_calls: false,
-    include: [],
+    include: reasoning ? ['reasoning.encrypted_content'] : [],
   }
 
   if (instructions) request.instructions = instructions

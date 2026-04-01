@@ -102,9 +102,9 @@ export function MCPRemoteServerMenu({
       if (success) {
         onComplete?.(`Authentication successful. Connected to ${server.name}.`);
       } else if (result.client.type === 'needs-auth') {
-        onComplete?.('Authentication successful, but server still requires authentication. You may need to manually restart Claude Code.');
+        onComplete?.('Authentication successful, but server still requires authentication. You may need to manually restart Cute Code~ (◎_◎)');
       } else {
-        onComplete?.('Authentication successful, but server reconnection failed. You may need to manually restart Claude Code for the changes to take effect.');
+        onComplete?.('Authentication successful, but server reconnection failed. You may need to manually restart Cute Code~ (×_×)');
       }
     } catch (err) {
       logEvent('tengu_claudeai_mcp_auth_completed', {

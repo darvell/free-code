@@ -32,7 +32,7 @@ export interface ResponsesToolChoiceFunction {
 }
 
 export interface ResponsesReasoning {
-  effort?: 'low' | 'medium' | 'high'
+  effort?: 'minimal' | 'low' | 'medium' | 'high' | 'xhigh'
   summary?: 'auto' | 'concise' | 'detailed'
 }
 

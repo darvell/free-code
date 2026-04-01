@@ -87,7 +87,7 @@ export function HistorySearchDialog({
       query_length: query.length
     });
     void item_1.entry.resolve().then(onSelect);
-  }} onCancel={onCancel} emptyMessage={q_0 => items === null ? 'Loading…' : q_0 ? 'No matching prompts' : 'No history yet'} selectAction="use" direction="up" previewPosition={previewOnRight ? 'right' : 'bottom'} renderItem={(item_2, isFocused) => <Text>
+  }} onCancel={onCancel} emptyMessage={q_0 => items === null ? '(◕ᴗ◕) loading~' : q_0 ? '(◎_◎) no matching prompts~' : '(=_=) no history yet~'} selectAction="use" direction="up" previewPosition={previewOnRight ? 'right' : 'bottom'} renderItem={(item_2, isFocused) => <Text>
           <Text dimColor>{item_2.age}</Text>
           <Text color={isFocused ? 'suggestion' : undefined}>
             {' '}

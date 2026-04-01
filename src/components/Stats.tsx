@@ -94,7 +94,7 @@ export function Stats(t0) {
   const allTimePromise = t1;
   let t2;
   if ($[1] === Symbol.for("react.memo_cache_sentinel")) {
-    t2 = <Box marginTop={1}><Spinner /><Text> Loading your Claude Code stats…</Text></Box>;
+    t2 = <Box marginTop={1}><Spinner /><Text> (◕ᴗ◕) fetching your Cute Code stats~</Text></Box>;
     $[1] = t2;
   } else {
     t2 = $[1];
@@ -252,7 +252,7 @@ function StatsContent(t0) {
   if (!displayStats || !allTimeStats) {
     let t7;
     if ($[16] === Symbol.for("react.memo_cache_sentinel")) {
-      t7 = <Box marginTop={1}><Spinner /><Text> Loading stats…</Text></Box>;
+      t7 = <Box marginTop={1}><Spinner /><Text> (◕ᴗ◕) loading stats~</Text></Box>;
       $[16] = t7;
     } else {
       t7 = $[16];

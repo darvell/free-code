@@ -110,7 +110,7 @@ export function RemoteEnvironmentDialog(t0) {
   if (loadingState === "loading") {
     let t5;
     if ($[6] === Symbol.for("react.memo_cache_sentinel")) {
-      t5 = <LoadingState message={"Loading environments\u2026"} />;
+      t5 = <LoadingState message={"(◕ᴗ◕) loading environments~"} />;
       $[6] = t5;
     } else {
       t5 = $[6];

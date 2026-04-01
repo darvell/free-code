@@ -89,7 +89,7 @@ export function AssistantTextMessage(t0) {
         const upgradeHint = t2;
         let t3;
         if ($[4] === Symbol.for("react.memo_cache_sentinel")) {
-          t3 = <MessageResponse height={1}><Text color="error">Context limit reached · /compact or /clear to continue{upgradeHint ? ` · ${upgradeHint}` : ""}</Text></MessageResponse>;
+          t3 = <MessageResponse height={1}><Text color="error">(×_×;) brain full~ /compact or /clear to continue{upgradeHint ? ` · ${upgradeHint}` : ""}</Text></MessageResponse>;
           $[4] = t3;
         } else {
           t3 = $[4];

@@ -45,7 +45,7 @@ export function AgentProgressLine(t0) {
   if ($[0] !== isBackgrounded || $[1] !== isResolved || $[2] !== lastToolInfo || $[3] !== taskDescription) {
     t3 = () => {
       if (!isResolved) {
-        return lastToolInfo || "Initializing\u2026";
+        return lastToolInfo || "(◕ᴗ◕) warming up~";
       }
       if (isBackgrounded) {
         return taskDescription ?? "Running in the background";
