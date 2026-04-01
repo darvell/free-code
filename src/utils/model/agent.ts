@@ -134,6 +134,11 @@ export function getAgentModelDisplay(model: string | undefined): string {
 export function getAgentModelOptions(): AgentModelOption[] {
   return [
     {
+      value: 'inherit',
+      label: 'Inherit from parent',
+      description: 'Use the same model as the main conversation',
+    },
+    {
       value: 'sonnet',
       label: 'Sonnet',
       description: 'Balanced performance - best for most agents',
@@ -147,11 +152,6 @@ export function getAgentModelOptions(): AgentModelOption[] {
       value: 'haiku',
       label: 'Haiku',
       description: 'Fast and efficient for simple tasks',
-    },
-    {
-      value: 'inherit',
-      label: 'Inherit from parent',
-      description: 'Use the same model as the main conversation',
     },
   ]
 }

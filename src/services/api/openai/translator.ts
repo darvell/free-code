@@ -29,6 +29,24 @@ import type {
 // Request translation: Anthropic -> OpenAI Responses API
 // ---------------------------------------------------------------------------
 
+const OPENAI_HARNESS_ADDENDUM = `# Claude Code harness addendum
+
+You are running inside the Claude Code harness.
+
+Follow explicit developer, system, and user instructions over any generic model defaults.
+
+Complete multi-step work to a real stopping point before ending your turn. Do not pause partway through exploration, implementation, or verification just to ask whether to continue unless the user asked for a checkpoint.
+
+Keep check-ins rare. Ask questions only for real blockers, missing requirements, or risky actions that need confirmation.
+
+Report outcomes plainly. Say what you changed, what you verified, and what is still unresolved. Do not present incomplete work as finished.`
+
+function appendOpenAIHarnessAddendum(instructions: string | undefined): string {
+  return instructions
+    ? `${instructions}\n\n${OPENAI_HARNESS_ADDENDUM}`
+    : OPENAI_HARNESS_ADDENDUM
+}
+
 function mapEffortToOpenAIReasoning(
   effort: unknown,
 ): ResponsesReasoning['effort'] | undefined {
@@ -111,6 +129,8 @@ export function translateToResponsesApi(
       instructions = texts.join('\n\n')
     }
   }
+
+  instructions = appendOpenAIHarnessAddendum(instructions)
 
   // Messages -> input items
   for (const msg of params.messages) {
