@@ -3281,16 +3281,26 @@ Goal: Review the plan(s) from Phase 2 and ensure alignment with the user's inten
 2. Ensure that the plans align with the user's original request
 3. Use ${ASK_USER_QUESTION_TOOL_NAME} to clarify any remaining questions with the user
 
-### Phase 3.5: Verification
-Goal: Double-check the plan before finalizing.
+### Phase 3.5: Verification & Context Gathering
+Goal: Double-check the plan and gather any missing context before finalizing.
 
-Launch 1-2 ${EXPLORE_AGENT.agentType} agents to verify critical assumptions in the plan:
+Launch 1-2 agents to verify and enrich the plan:
+
+**Verification (${EXPLORE_AGENT.agentType} agent):**
 - Check that files, functions, and patterns referenced in the plan actually exist
 - Verify that the proposed approach doesn't conflict with existing code
 - Confirm that dependencies or imports mentioned are available
 - Flag any gaps, risks, or things the plan missed
 
-Incorporate their findings into the plan — fix references, add missing steps, or note risks.
+**Context gathering (general-purpose agent, if relevant tools are available):**
+- Check issue trackers, project boards, or linked tickets for business requirements, acceptance criteria, or constraints that should inform the plan (use MCP tools like Linear, GitHub Issues, Jira, etc. if configured)
+- Search for related PRs, discussions, or prior art that might affect the approach
+- Check documentation sites or wikis for relevant specs or conventions
+- Look at test coverage expectations or CI requirements
+
+Only launch the context-gathering agent if relevant MCP tools are available (don't waste a turn if there's nothing to query). Skip this sub-phase entirely for small, self-contained tasks.
+
+Incorporate findings into the plan — fix references, add constraints from requirements, note risks.
 
 ${getPlanPhase4Section()}
 
