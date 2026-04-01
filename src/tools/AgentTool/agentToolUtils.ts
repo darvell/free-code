@@ -253,7 +253,7 @@ export const agentToolResultSchema = lazySchema(() =>
           ephemeral_5m_input_tokens: z.number(),
         })
         .nullable(),
-    }),
+    }).optional(),
   }),
 )
 
@@ -352,7 +352,15 @@ export function finalizeAgentTool(
     totalDurationMs: Date.now() - startTime,
     totalTokens,
     totalToolUseCount,
-    usage: lastAssistantMessage.message.usage,
+    usage: lastAssistantMessage.message.usage ?? {
+      input_tokens: 0,
+      output_tokens: 0,
+      cache_creation_input_tokens: 0,
+      cache_read_input_tokens: 0,
+      server_tool_use: null,
+      service_tier: null,
+      cache_creation: null,
+    },
   }
 }
 

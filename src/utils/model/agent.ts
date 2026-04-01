@@ -7,7 +7,24 @@ import {
   getRuntimeMainLoopModel,
   parseUserSpecifiedModel,
 } from './model.js'
+import { isOpenAIModel } from '../../services/api/openai/modelDetect.js'
 import { getAPIProvider } from './providers.js'
+
+/**
+ * Maps Anthropic tier aliases to their OpenAI equivalents when the parent
+ * model is an OpenAI model.
+ *
+ *   haiku   → gpt-5.3-codex-spark   (fast/cheap — codebase exploration)
+ *   sonnet  → gpt-5.3-codex-spark   (map to fast too — LLMs tend to pick sonnet
+ *                                    for subagents but we want the cheap model)
+ *   opus    → gpt-5.4               (most capable)
+ *   inherit → parent model as-is
+ */
+const OPENAI_TIER_MAP: Record<string, string> = {
+  haiku: 'gpt-5.3-codex-spark',
+  sonnet: 'gpt-5.3-codex-spark',
+  opus: 'gpt-5.4',
+}
 
 export const AGENT_MODEL_OPTIONS = [...MODEL_ALIASES, 'inherit'] as const
 export type AgentModelAlias = (typeof AGENT_MODEL_OPTIONS)[number]
@@ -68,6 +85,21 @@ export function getAgentModel(
 
   // Prioritize tool-specified model if provided
   if (toolSpecifiedModel) {
+    // 'inherit' means use the parent model directly
+    if (toolSpecifiedModel === 'inherit') {
+      return getRuntimeMainLoopModel({
+        permissionMode: permissionMode ?? 'default',
+        mainLoopModel: parentModel,
+        exceeds200kTokens: false,
+      })
+    }
+    // Under an OpenAI parent, map tier aliases to OpenAI equivalents
+    if (isOpenAIModel(parentModel)) {
+      const openaiEquivalent = OPENAI_TIER_MAP[toolSpecifiedModel.toLowerCase()]
+      if (openaiEquivalent) return openaiEquivalent
+      if (isOpenAIModel(toolSpecifiedModel)) return toolSpecifiedModel
+      return parentModel
+    }
     if (aliasMatchesParentTier(toolSpecifiedModel, parentModel)) {
       return parentModel
     }
@@ -85,6 +117,17 @@ export function getAgentModel(
       mainLoopModel: parentModel,
       exceeds200kTokens: false,
     })
+  }
+
+  // When the parent is an OpenAI model, map Anthropic tier aliases to their
+  // OpenAI equivalents so subagents don't try to hit the Anthropic API.
+  if (isOpenAIModel(parentModel)) {
+    const openaiEquivalent = OPENAI_TIER_MAP[agentModelWithExp.toLowerCase()]
+    if (openaiEquivalent) return openaiEquivalent
+    // If the agent spec is already an OpenAI model ID, use it directly.
+    if (isOpenAIModel(agentModelWithExp)) return agentModelWithExp
+    // Unrecognised spec under an OpenAI parent — fall back to parent model.
+    return parentModel
   }
 
   if (aliasMatchesParentTier(agentModelWithExp, parentModel)) {

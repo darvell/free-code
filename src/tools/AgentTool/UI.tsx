@@ -25,6 +25,7 @@ import { formatDuration, formatNumber } from '../../utils/format.js';
 import { buildSubagentLookups, createAssistantMessage, EMPTY_LOOKUPS } from '../../utils/messages.js';
 import type { ModelAlias } from '../../utils/model/aliases.js';
 import { getMainLoopModel, parseUserSpecifiedModel, renderModelName } from '../../utils/model/model.js';
+import { getAgentModel } from '../../utils/model/agent.js';
 import type { Theme, ThemeName } from '../../utils/theme.js';
 import type { outputSchema, Progress, RemoteLaunchedOutput } from './AgentTool.js';
 import { inputSchema } from './AgentTool.js';
@@ -377,12 +378,12 @@ export function renderToolResultMessage(data: Output, progressMessagesForMessage
   const completionMessage = `Done (${result.join(' · ')})`;
   const finalAssistantMessage = createAssistantMessage({
     content: completionMessage,
-    usage: {
+    usage: usage ? {
       ...usage,
       inference_geo: null,
       iterations: null,
       speed: null
-    }
+    } : undefined
   });
   return <Box flexDirection="column">
       {"external" === 'ant' && <MessageResponse>
@@ -429,7 +430,9 @@ export function renderToolUseTag(input: Partial<{
   const tags: React.ReactNode[] = [];
   if (input.model) {
     const mainModel = getMainLoopModel();
-    const agentModel = parseUserSpecifiedModel(input.model);
+    // Resolve through getAgentModel so OpenAI tier mapping applies — e.g.
+    // 'sonnet' under a gpt-5.4 parent shows gpt-5.4, not claude-sonnet-4-6.
+    const agentModel = getAgentModel(undefined, mainModel, input.model as ModelAlias);
     if (agentModel !== mainModel) {
       tags.push(<Box key="model" flexWrap="nowrap" marginLeft={1}>
           <Text dimColor>{renderModelName(agentModel)}</Text>
@@ -480,7 +483,9 @@ export function renderToolUseProgressMessage(progressMessages: ProgressMessage<P
     let tokens = null;
     if (latestAssistant?.data.message.type === 'assistant') {
       const usage = latestAssistant.data.message.message.usage;
-      tokens = (usage.cache_creation_input_tokens ?? 0) + (usage.cache_read_input_tokens ?? 0) + usage.input_tokens + usage.output_tokens;
+      if (usage) {
+        tokens = (usage.cache_creation_input_tokens ?? 0) + (usage.cache_read_input_tokens ?? 0) + usage.input_tokens + usage.output_tokens;
+      }
     }
     return {
       toolUseCount,
@@ -639,7 +644,9 @@ function calculateAgentStats(progressMessages: ProgressMessage<Progress>[]): {
   let tokens = null;
   if (latestAssistant?.data.message.type === 'assistant') {
     const usage = latestAssistant.data.message.message.usage;
-    tokens = (usage.cache_creation_input_tokens ?? 0) + (usage.cache_read_input_tokens ?? 0) + usage.input_tokens + usage.output_tokens;
+    if (usage) {
+      tokens = (usage.cache_creation_input_tokens ?? 0) + (usage.cache_read_input_tokens ?? 0) + usage.input_tokens + usage.output_tokens;
+    }
   }
   return {
     toolUseCount,
